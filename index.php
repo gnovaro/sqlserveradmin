@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Gustavo Novaro
- * @version 1.0.1
+ * @version 1.0.2
  */
 define('APP_NAME','SQL Server Admin');
 require('config.php');
@@ -75,10 +75,10 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
                     ?>
                 </tr>
             </thead>
+            <tbody>
             <?php
-            endif
+            endif;
             ?>
-
             <tr>
                 <?php
                 foreach($data[$i] as $key => $val):
@@ -92,6 +92,7 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
                 $i++;
             endwhile;
             ?>
+            </tbody>
         </table>
     </div><!--./table-responsive-->
     <?php
