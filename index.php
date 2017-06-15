@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Gustavo Novaro
- * @version 1.0.2
+ * @version 1.0.3
  */
 define('APP_NAME','SQL Server Admin');
 require('config.php');
@@ -14,6 +14,11 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
 <head>
     <title><?php echo APP_NAME;?></title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <style>
+    #queryEditor {
+        height: 200px;
+    }
+   </style>
 </head>
 <body>
     <!-- Static navbar -->
@@ -31,12 +36,14 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
       </div>
     </nav>
 <div class="container-fluid">
-    <form method="post">
+    <form id="frm-query" method="post">
         <div class="form-group">
-            <textarea name="query" required="required" cols="120" placeholder="Add your SQL query heare. Ex: SELECT * FROM table" class="form-control"><?php echo $query;?></textarea>
+            <div id="queryEditor"><?php echo $query;?></div>
+            <!--<textarea name="query" id="query" required="required" cols="120" placeholder="Add your SQL query heare. Ex: SELECT * FROM table" class="form-control"><?php echo $query;?></textarea>-->
+            <input type="hidden" name="query" id="query">
         </div>
         <div class="form-group">
-            <button type="submit" class="btn btn-primary">Ejecutar</button>
+            <button type="submit" class="btn btn-primary">Run <span class="glyphicon glyphicon-play"></span></button> (Run query with F9)
         </div>
     </form>
     <?php
@@ -51,7 +58,7 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
         $rows_count = odbc_num_rows ($result);
     ?>
     <div>
-        <strong>Registros:</strong> <?php echo $rows_count;?>
+        <strong>Rows count:</strong> <?php echo $rows_count;?>
     </div>
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
@@ -77,8 +84,9 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
             </thead>
             <tbody>
             <?php
-            endif;
+            endif
             ?>
+
             <tr>
                 <?php
                 foreach($data[$i] as $key => $val):
@@ -92,7 +100,7 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
                 $i++;
             endwhile;
             ?>
-            </tbody>
+        </tbody>
         </table>
     </div><!--./table-responsive-->
     <?php
@@ -104,6 +112,33 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
     ?>
 </div><!--./container-fluid-->
 <!-- Latest compiled and minified JavaScript -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-modelist.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-themelist.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/mode-sqlserver.js"></script>
+<script>
+	$( document ).ready(function() {
+		var editor = ace.edit('queryEditor');
+		editor.setTheme("ace/theme/sqlserver");
+		editor.getSession().setMode("ace/mode/sqlserver");
+
+		$( "#frm-query" ).on('submit', function( event ) {
+			event.preventDefault();
+			var editor = ace.edit('queryEditor');
+		    $("#query").val(editor.getValue());
+			this.submit();
+		});
+
+        window.onkeypress = function(e) {
+            //IF keyCode == F9 submit
+            console.log(e.keyCode);
+            if(e.keyCode === 120) {
+                $("#frm-query").submit();
+            }
+        }
+	});
+</script>
 </body>
 </html>
