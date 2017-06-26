@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Gustavo Novaro
- * @version 1.0.3
+ * @version 1.0.4
  */
 define('APP_NAME','SQL Server Admin');
 require('config.php');
@@ -14,6 +14,7 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
 <head>
     <title><?php echo APP_NAME;?></title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     <style>
     #queryEditor {
         height: 200px;
@@ -21,20 +22,27 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
    </style>
 </head>
 <body>
-    <!-- Static navbar -->
-    <nav class="navbar navbar-default navbar-static-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#"><?php echo APP_NAME;?></a>
-        </div>
-      </div>
-    </nav>
+<!-- Static navbar -->
+<nav class="navbar navbar-default navbar-static-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#"><?php echo APP_NAME;?></a>
+    </div>
+    <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right">
+        <li>
+          <a href="#"><span class="fa fa-database" aria-hidden="true"></span> <?php echo $database;?></a>
+        </li>
+        </ul>
+    </div>
+  </div>
+</nav>
 <div class="container-fluid">
     <form id="frm-query" method="post">
         <div class="form-group">
@@ -49,7 +57,7 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
     <?php
     if(!empty($query))
     {
-        $result = odbc_exec($connection,$query);
+        $result = @odbc_exec($connection,$query);
     }
     ?>
     <?php
@@ -106,6 +114,9 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
     <?php
         // Free Result
         odbc_free_result($result);
+    else:
+    //Error messages
+        echo odbc_errormsg();
     endif;
     // Close Connection
     odbc_close($connection);
