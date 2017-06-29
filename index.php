@@ -1,13 +1,47 @@
 <?php
 /**
  * @author Gustavo Novaro
- * @version 1.0.4
+ * @version 1.0.5
  */
 define('APP_NAME','SQL Server Admin');
 require('config.php');
 $connection = odbc_connect("Driver={SQL Server};Server=$server;Database=$database;", $user, $password);
 
 $query = !empty($_POST['query']) ? $_POST['query'] : null;
+
+function exportCSV($data)
+{
+    $filename = 'export_'.date('Ymd_His').'.csv';
+    header( 'Content-Type: text/csv' );
+    header( 'Content-Disposition: attachment;filename='.$filename);
+    $out = fopen('php://output', 'w');
+    foreach($data as $line) {
+        if(is_array($line)){
+            fputcsv($out, $line);
+        }
+    }
+    fclose($out);
+}
+
+if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'export')
+{
+    $i = 0;
+    $result = @odbc_exec($connection,$query);
+    if(!empty($result)) {
+        $columns = odbc_num_fields($result);
+        for ($j=1; $j<= $columns; $j++)
+        {
+            $header[] = odbc_field_name ($result, $j );
+        }
+        $data[] = $header;
+
+        while($row = odbc_fetch_array($result)){
+            $data[] = $row;
+        }
+        exportCSV($data);
+    }
+    die;
+}
 ?>
 <!doctype html>
 <html>
@@ -47,12 +81,17 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
     <form id="frm-query" method="post">
         <div class="form-group">
             <div id="queryEditor"><?php echo $query;?></div>
-            <!--<textarea name="query" id="query" required="required" cols="120" placeholder="Add your SQL query heare. Ex: SELECT * FROM table" class="form-control"><?php echo $query;?></textarea>-->
             <input type="hidden" name="query" id="query">
         </div>
         <div class="form-group">
-            <button type="submit" class="btn btn-primary">Run <span class="glyphicon glyphicon-play"></span></button> (Run query with F9)
+            <div class="col-md-6">
+                <button type="button" class="btn btn-primary" onclick="setAction('query')">Run <span class="glyphicon glyphicon-play"></span></button> (Run query with F9)
+            </div>
+            <div class="col-md-6">
+                <button type="button" class="btn btn-success" onclick="setAction('export')">Export csv <span class="fa fa-file-excel-o"></span></button>
+            </div>
         </div>
+        <input type="hidden" name="action" id="action" value="query">
     </form>
     <?php
     if(!empty($query))
@@ -63,41 +102,33 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
     <?php
     // Get Data From Result
     if(!empty($result)):
-        $rows_count = odbc_num_rows ($result);
+        $rows_count = odbc_num_rows($result);
+        $columns = odbc_num_fields($result);
     ?>
     <div>
         <strong>Rows count:</strong> <?php echo $rows_count;?>
     </div>
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
             <?php
-            $i = 0;
-            while($data[] = odbc_fetch_array($result)):
+            for ($j=1; $j<= $columns; $j++):
+                $key = odbc_field_name ($result, $j );
             ?>
-
+                <th><?php echo $key;?></th>
             <?php
-            //Encabezado
-            if($i == 0):
+            endfor;
             ?>
-            <thead>
-                <tr>
-                    <?php
-                    foreach($data[$i] as $key => $val):
-                    ?>
-                    <th><?php echo $key;?></th>
-                    <?php
-                    endforeach;
-                    ?>
-                </tr>
-            </thead>
-            <tbody>
+        </tr>
+        </thead>
+        <tbody>
             <?php
-            endif
+            while($row = odbc_fetch_array($result)):
             ?>
-
             <tr>
                 <?php
-                foreach($data[$i] as $key => $val):
+                foreach($row as $key => $val):
                 ?>
                 <td><?php echo $val;?></td>
                 <?php
@@ -105,7 +136,6 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
                 ?>
             </tr>
             <?php
-                $i++;
             endwhile;
             ?>
         </tbody>
@@ -151,5 +181,6 @@ $query = !empty($_POST['query']) ? $_POST['query'] : null;
         }
 	});
 </script>
+<script src="asset/SQLAdmin.js"></script>
 </body>
 </html>
