@@ -1,7 +1,8 @@
 <?php
 /**
  * @author Gustavo Novaro
- * @version 1.0.5
+ * @author Agustín Garcia
+ * @version 1.0.6
  */
 define('APP_NAME','SQL Server Admin');
 require('config.php');
@@ -42,6 +43,13 @@ if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'export')
     }
     die;
 }
+
+//Show tables
+$query_tables = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG='$database'";
+$result_tables = @odbc_exec($connection,$query_tables);
+while($row = odbc_fetch_object($result_tables)){
+    $tables[] = $row->TABLE_NAME;
+}
 ?>
 <!doctype html>
 <html>
@@ -52,6 +60,15 @@ if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'export')
     <style>
     #queryEditor {
         height: 200px;
+        box-shadow:0 2px 5px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12);
+    }
+    .table-hover>tbody>tr:hover{
+        background-color: #E8F5E9 !important;
+    }
+    .table-list-container {
+        border: solid 1px #f6f6f6;
+        max-height: 200px;
+        overflow-y: scroll;
     }
    </style>
 </head>
@@ -80,19 +97,41 @@ if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'export')
 <div class="container-fluid">
     <form id="frm-query" method="post">
         <div class="form-group">
-            <div id="queryEditor"><?php echo $query;?></div>
-            <input type="hidden" name="query" id="query">
+            <div class="col-md-3 table-list-container">
+            <?php
+            if(!empty($tables)):
+            ?>
+                <?php
+                foreach($tables as $table):
+                ?>
+                <div>
+                    <a class="set-query" data-table="<?php echo $table;?>"><span class="fa fa-table"></span> <?php echo $table;?></a>
+                </div>
+                <?php
+                endforeach;
+                ?>
+            <?php
+            endif;
+            ?>
+            </div>
+            <div class="col-md-9">
+                <div id="queryEditor"><?php echo $query;?></div>
+                <input type="hidden" name="query" id="query">
+            </div>
         </div>
+        <div class="clearfix"></div>
+        <br>
         <div class="form-group">
             <div class="col-md-6">
-                <button type="button" class="btn btn-primary" onclick="setAction('query')">Run <span class="glyphicon glyphicon-play"></span></button> (Run query with F9)
+                <button type="button" class="btn btn-sm btn-primary" onclick="setAction('query')">Run <span class="glyphicon glyphicon-play"></span></button> (Run query with F9)
             </div>
             <div class="col-md-6">
-                <button type="button" class="btn btn-success" onclick="setAction('export')">Export csv <span class="fa fa-file-excel-o"></span></button>
+                <button type="button" class="btn btn-success btn-xs pull-right" onclick="setAction('export')">Export csv <span class="fa fa-file-excel-o"></span></button>
             </div>
         </div>
         <input type="hidden" name="action" id="action" value="query">
     </form>
+    <div class="clearfix"></div>
     <?php
     if(!empty($query))
     {
@@ -109,7 +148,7 @@ if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'export')
         <strong>Rows count:</strong> <?php echo $rows_count;?>
     </div>
     <div class="table-responsive">
-        <table class="table table-bordered table-striped">
+        <table class="table table-bordered table-striped table-hover">
         <thead>
         <tr>
             <?php
@@ -179,6 +218,16 @@ if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'export')
                 $("#frm-query").submit();
             }
         }
+
+        $( ".set-query" ).on('click', function( event ) {
+            var table = $(this).attr('data-table');
+            var editor = ace.edit('queryEditor');
+            query = editor.getValue();
+            if(query === '')
+                editor.setValue("SELECT * FROM "+table);                
+            else
+                editor.setValue(query + "\nSELECT * FROM "+table);
+        });
 	});
 </script>
 <script src="asset/SQLAdmin.js"></script>
