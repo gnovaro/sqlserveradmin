@@ -266,7 +266,7 @@ while($row = odbc_fetch_object($result_procedures)){
             if(query === '')
                 editor.setValue("EXECUTE "+procedure);
             else
-                editor.setValue(query + "\EXECUTE "+procedure);
+                editor.setValue(query + "\nEXECUTE "+procedure);
         });
 	});
 </script>
