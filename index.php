@@ -2,7 +2,7 @@
 /**
  * @author Gustavo Novaro
  * @author Agustín Garcia
- * @version 1.0.6
+ * @version 1.0.7
  */
 define('APP_NAME','SQL Server Admin');
 require('config.php');
@@ -45,7 +45,7 @@ if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'export')
 }
 
 //Show tables
-$query_tables = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG='$database'";
+$query_tables = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG='$database' ORDER BY TABLE_NAME";
 $result_tables = @odbc_exec($connection,$query_tables);
 while($row = odbc_fetch_object($result_tables)){
     $tables[] = $row->TABLE_NAME;
