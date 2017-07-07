@@ -1,8 +1,7 @@
 <?php
 /**
  * @author Gustavo Novaro
- * @author Agustín Garcia
- * @version 1.0.7
+ * @version 1.0.8
  */
 define('APP_NAME','SQL Server Admin');
 require('config.php');
@@ -49,6 +48,16 @@ $query_tables = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TY
 $result_tables = @odbc_exec($connection,$query_tables);
 while($row = odbc_fetch_object($result_tables)){
     $tables[] = $row->TABLE_NAME;
+}
+
+//Procedures
+$query_procedures = "SELECT ROUTINE_NAME
+                    FROM $database.information_schema.routines
+                    WHERE routine_type = 'PROCEDURE'
+                    ORDER BY ROUTINE_NAME";
+$result_procedures = @odbc_exec($connection,$query_procedures);
+while($row = odbc_fetch_object($result_procedures)){
+    $procedures[] = $row->ROUTINE_NAME;
 }
 ?>
 <!doctype html>
@@ -98,21 +107,40 @@ while($row = odbc_fetch_object($result_tables)){
     <form id="frm-query" method="post">
         <div class="form-group">
             <div class="col-md-3 table-list-container">
-            <?php
-            if(!empty($tables)):
-            ?>
+                <div><!--tables-->
                 <?php
-                foreach($tables as $table):
+                if(!empty($tables)):
                 ?>
-                <div>
-                    <a class="set-query" data-table="<?php echo $table;?>"><span class="fa fa-table"></span> <?php echo $table;?></a>
-                </div>
+                    <?php
+                    foreach($tables as $table):
+                    ?>
+                    <div>
+                        <a class="set-query" data-table="<?php echo $table;?>"><span class="fa fa-table"></span> <?php echo $table;?></a>
+                    </div>
+                    <?php
+                    endforeach;
+                    ?>
                 <?php
-                endforeach;
+                endif;
                 ?>
-            <?php
-            endif;
-            ?>
+                </div><!--tables-->
+                <div><!--procedures-->
+                <?php
+                if(!empty($procedures)):
+                ?>
+                    <?php
+                    foreach($procedures as $procedure):
+                    ?>
+                    <div>
+                        <a class="set-procedure" data-procedure="<?php echo $procedure;?>"><span class="fa fa-file-code-o"></span> <?php echo $procedure;?></a>
+                    </div>
+                    <?php
+                    endforeach;
+                    ?>
+                <?php
+                endif;
+                ?>
+                </div><!--procedures-->
             </div>
             <div class="col-md-9">
                 <div id="queryEditor"><?php echo $query;?></div>
@@ -219,14 +247,26 @@ while($row = odbc_fetch_object($result_tables)){
             }
         }
 
+        //Set table
         $( ".set-query" ).on('click', function( event ) {
             var table = $(this).attr('data-table');
             var editor = ace.edit('queryEditor');
             query = editor.getValue();
             if(query === '')
-                editor.setValue("SELECT * FROM "+table);                
+                editor.setValue("SELECT * FROM "+table);
             else
                 editor.setValue(query + "\nSELECT * FROM "+table);
+        });
+
+        //Set procedure
+        $( ".set-procedure" ).on('click', function( event ) {
+            var procedure = $(this).attr('data-procedure');
+            var editor = ace.edit('queryEditor');
+            query = editor.getValue();
+            if(query === '')
+                editor.setValue("EXECUTE "+procedure);
+            else
+                editor.setValue(query + "\EXECUTE "+procedure);
         });
 	});
 </script>
