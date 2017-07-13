@@ -1,0 +1,29 @@
+#queryEditor {
+    height: 200px;
+    box-shadow:0 2px 5px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12);
+}
+.table-hover>tbody>tr:hover{
+    background-color: #E8F5E9 !important;
+}
+.table-list-container {
+    border: solid 1px #f6f6f6;
+    max-height: 200px;
+    overflow-y: scroll;
+    transition: 1s;
+    cursor: pointer;
+}
+.table-list-container:hover {
+    max-height: 500px;
+}
+input.filtros {
+    margin-right: 1em;
+}
+.tree-view-item{
+    white-space: nowrap;
+}
+.buttons-wrapper{
+    margin-top: 1em;
+}
+.buttons-wrapper div{
+    display: inline;
+}
