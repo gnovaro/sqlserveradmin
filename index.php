@@ -1,14 +1,12 @@
 <?php
 /**
  * @author Gustavo Novaro
- * @version 1.0.8
+ * @version 1.0.9
  */
 define('APP_NAME','SQL Server Admin');
 require('config.php');
 $connection = odbc_connect("Driver={SQL Server};Server=$server;Database=$database;", $user, $password);
-
 $query = !empty($_POST['query']) ? $_POST['query'] : null;
-
 function exportCSV($data)
 {
     $filename = 'export_'.date('Ymd_His').'.csv';
@@ -22,7 +20,6 @@ function exportCSV($data)
     }
     fclose($out);
 }
-
 if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'export')
 {
     $i = 0;
@@ -34,7 +31,6 @@ if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'export')
             $header[] = odbc_field_name ($result, $j );
         }
         $data[] = $header;
-
         while($row = odbc_fetch_array($result)){
             $data[] = $row;
         }
@@ -43,11 +39,18 @@ if(isset($_REQUEST['action']) && $_REQUEST['action'] == 'export')
     die;
 }
 
-//Show tables
+//Tables
 $query_tables = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_CATALOG='$database' ORDER BY TABLE_NAME";
 $result_tables = @odbc_exec($connection,$query_tables);
 while($row = odbc_fetch_object($result_tables)){
     $tables[] = $row->TABLE_NAME;
+}
+
+//Views
+$query_views = "SELECT TABLE_NAME FROM $database.INFORMATION_SCHEMA.VIEWS ORDER BY TABLE_NAME";
+$result_views = @odbc_exec($connection,$query_views);
+while($row = odbc_fetch_object($result_views)){
+    $views[] = $row->TABLE_NAME;
 }
 
 //Procedures
@@ -66,20 +69,7 @@ while($row = odbc_fetch_object($result_procedures)){
     <title><?php echo APP_NAME;?></title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-    <style>
-    #queryEditor {
-        height: 200px;
-        box-shadow:0 2px 5px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12);
-    }
-    .table-hover>tbody>tr:hover{
-        background-color: #E8F5E9 !important;
-    }
-    .table-list-container {
-        border: solid 1px #f6f6f6;
-        max-height: 200px;
-        overflow-y: scroll;
-    }
-   </style>
+    <link rel="stylesheet" href="asset/sqladmin.css">
 </head>
 <body>
 <!-- Static navbar -->
@@ -106,6 +96,14 @@ while($row = odbc_fetch_object($result_procedures)){
 <div class="container-fluid">
     <form id="frm-query" method="post">
         <div class="form-group">
+            <div>
+                <label for="showTables">Tables</label>
+                <input type="checkbox" id="showTables" name="showTables" value="show_tables" class="filtros" checked="checked">
+                <label for="showViews">Views</label>
+                <input type="checkbox" id="showViews" name="showViews" value="show_views" class="filtros" checked="checked">
+                <label for="showSP">Stored procedures</label>
+                <input type="checkbox" id="showSP" name="showSP" value="show_sp" class="filtros" checked="checked">
+            </div>
             <div class="col-md-3 table-list-container">
                 <div><!--tables-->
                 <?php
@@ -114,7 +112,7 @@ while($row = odbc_fetch_object($result_procedures)){
                     <?php
                     foreach($tables as $table):
                     ?>
-                    <div>
+                    <div class="tree-view-item">
                         <a class="set-query" data-table="<?php echo $table;?>"><span class="fa fa-table"></span> <?php echo $table;?></a>
                     </div>
                     <?php
@@ -124,6 +122,23 @@ while($row = odbc_fetch_object($result_procedures)){
                 endif;
                 ?>
                 </div><!--tables-->
+                <div><!--views-->
+                <?php
+                if(!empty($views)):
+                ?>
+                    <?php
+                    foreach($views as $view):
+                    ?>
+                    <div class="tree-view-item">
+                        <a class="set-query" data-view="<?php echo $view;?>"><span class="fa fa-wpforms"></span> <?php echo $view;?></a>
+                    </div>
+                    <?php
+                    endforeach;
+                    ?>
+                <?php
+                endif;
+                ?>
+                </div><!--views-->
                 <div><!--procedures-->
                 <?php
                 if(!empty($procedures)):
@@ -131,7 +146,7 @@ while($row = odbc_fetch_object($result_procedures)){
                     <?php
                     foreach($procedures as $procedure):
                     ?>
-                    <div>
+                    <div class="tree-view-item">
                         <a class="set-procedure" data-procedure="<?php echo $procedure;?>"><span class="fa fa-file-code-o"></span> <?php echo $procedure;?></a>
                     </div>
                     <?php
@@ -145,18 +160,18 @@ while($row = odbc_fetch_object($result_procedures)){
             <div class="col-md-9">
                 <div id="queryEditor"><?php echo $query;?></div>
                 <input type="hidden" name="query" id="query">
+                <div class="form-group buttons-wrapper">
+                    <div>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="setAction('query')">Run <span class="glyphicon glyphicon-play"></span></button> (Run query with F9)
+            </div>
+                    <div>
+                        <button type="button" class="btn btn-success btn-xs pull-right" onclick="setAction('export')">Export csv <span class="fa fa-file-excel-o"></span></button>
+        </div>
+            </div>
             </div>
         </div>
         <div class="clearfix"></div>
         <br>
-        <div class="form-group">
-            <div class="col-md-6">
-                <button type="button" class="btn btn-sm btn-primary" onclick="setAction('query')">Run <span class="glyphicon glyphicon-play"></span></button> (Run query with F9)
-            </div>
-            <div class="col-md-6">
-                <button type="button" class="btn btn-success btn-xs pull-right" onclick="setAction('export')">Export csv <span class="fa fa-file-excel-o"></span></button>
-            </div>
-        </div>
         <input type="hidden" name="action" id="action" value="query">
     </form>
     <div class="clearfix"></div>
@@ -175,6 +190,7 @@ while($row = odbc_fetch_object($result_procedures)){
     <div>
         <strong>Rows count:</strong> <?php echo $rows_count;?>
     </div>
+    <?php if(!empty($columns)):?>
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover">
         <thead>
@@ -208,6 +224,7 @@ while($row = odbc_fetch_object($result_procedures)){
         </tbody>
         </table>
     </div><!--./table-responsive-->
+    <?php endif;?>
     <?php
         // Free Result
         odbc_free_result($result);
@@ -231,21 +248,19 @@ while($row = odbc_fetch_object($result_procedures)){
 		var editor = ace.edit('queryEditor');
 		editor.setTheme("ace/theme/sqlserver");
 		editor.getSession().setMode("ace/mode/sqlserver");
-
 		$( "#frm-query" ).on('submit', function( event ) {
 			event.preventDefault();
 			var editor = ace.edit('queryEditor');
 		    $("#query").val(editor.getValue());
 			this.submit();
 		});
-
         window.onkeypress = function(e) {
             //IF keyCode == F9 submit
             console.log(e.keyCode);
             if(e.keyCode === 120) {
                 $("#frm-query").submit();
             }
-        }
+        };
 
         //Set table
         $( ".set-query" ).on('click', function( event ) {
@@ -257,7 +272,6 @@ while($row = odbc_fetch_object($result_procedures)){
             else
                 editor.setValue(query + "\nSELECT * FROM "+table);
         });
-
         //Set procedure
         $( ".set-procedure" ).on('click', function( event ) {
             var procedure = $(this).attr('data-procedure');
@@ -267,6 +281,20 @@ while($row = odbc_fetch_object($result_procedures)){
                 editor.setValue("EXECUTE "+procedure);
             else
                 editor.setValue(query + "\nEXECUTE "+procedure);
+        });
+
+        $('.filtros').on('change', function(event) {
+            var tipoFiltro = $(this).val();
+            var checked = $(this).attr('checked');
+            if(tipoFiltro === 'show_tables'){
+                $('div > a[data-table]').toggle(checked);
+            }
+            if(tipoFiltro === 'show_views'){
+                $('div > a[data-view]').toggle(checked);
+            }
+            if(tipoFiltro === 'show_sp'){
+                $('div > a[data-procedure]').toggle(checked);
+            }
         });
 	});
 </script>
