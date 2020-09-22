@@ -6,7 +6,7 @@
 define('APP_NAME','SQL Server Admin');
 require('config.php');
 $connection = odbc_connect("Driver={SQL Server};Server=$server;Database=$database;", $user, $password);
-$query = !empty($_POST['query']) ? $_POST['query'] : null;
+$query = !empty($_POST['query']) ? strip_tags($_POST['query']) : null;
 function exportCSV($data)
 {
     $filename = 'export_'.date('Ymd_His').'.csv';
