@@ -193,6 +193,7 @@ while($row = odbc_fetch_object($result_procedures)){
     <?php if(!empty($columns)):?>
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover">
+	<caption>Query results</caption>
         <thead>
         <tr>
             <?php
