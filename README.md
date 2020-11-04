@@ -3,6 +3,10 @@ PHP SQL Server Admin is a web query tool for Microsoft SQL Server, you can execu
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gnovaro_sqlserveradmin&metric=alert_status)](https://sonarcloud.io/dashboard?id=gnovaro_sqlserveradmin)
 
+## Support utf8 charset
+
+![demo](D:\ref\sqlserveradmin\demo.png)
+
 ## Project page
 https://gnovaro.github.io/sqlserveradmin/
 

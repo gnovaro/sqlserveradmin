@@ -66,9 +66,10 @@ while($row = odbc_fetch_object($result_procedures)){
 <!doctype html>
 <html lang="en">
 <head>
+	<meta charset="utf-8">
     <title><?php echo APP_NAME;?></title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <link rel="stylesheet" href="asset/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link href="asset/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     <link rel="stylesheet" href="asset/sqladmin.css">
 </head>
 <body>
@@ -214,7 +215,7 @@ while($row = odbc_fetch_object($result_procedures)){
                 <?php
                 foreach($row as $key => $val):
                 ?>
-                <td><?php echo $val;?></td>
+                <td><?php echo iconv("GBK","UTF-8",$val);?></td>
                 <?php
                 endforeach;
                 ?>
@@ -231,19 +232,19 @@ while($row = odbc_fetch_object($result_procedures)){
         odbc_free_result($result);
     else:
     //Error messages
-        echo odbc_errormsg();
+        echo iconv("GBK","UTF-8",odbc_errormsg());
     endif;
     // Close Connection
     odbc_close($connection);
     ?>
 </div><!--./container-fluid-->
 <!-- Latest compiled and minified JavaScript -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-modelist.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-themelist.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/mode-sqlserver.js"></script>
+<script src="asset/jquery.min.js"></script>
+<script src="asset/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+<script src="asset/ace.js"></script>
+<script src="asset/ext-modelist.js"></script>
+<script src="asset/ext-themelist.js"></script>
+<script src="asset/mode-sqlserver.js"></script>
 <script>
 	$( document ).ready(function() {
 		var editor = ace.edit('queryEditor');
