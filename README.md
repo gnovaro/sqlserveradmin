@@ -5,7 +5,7 @@ PHP SQL Server Admin is a web query tool for Microsoft SQL Server, you can execu
 
 ## Support utf8 charset
 
-![demo](D:\ref\sqlserveradmin\demo.png)
+![utf8 demo](demo.png)
 
 ## Project page
 https://gnovaro.github.io/sqlserveradmin/
